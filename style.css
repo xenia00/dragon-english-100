@@ -866,6 +866,28 @@ main {
   color: #ffffff;
 }
 
+.btn-tune-speed {
+  padding: 0.68rem 1.1rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  border: 1px solid var(--bg-card-border);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: var(--transition);
+}
+
+.btn-tune-speed:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: #38bdf8;
+  color: #38bdf8;
+  transform: translateY(-1px);
+}
+
 .audio-settings-group {
   display: flex;
   align-items: center;
@@ -1226,17 +1248,83 @@ main {
   border-left: 4px solid var(--accent-gold);
 }
 
-.demo-en {
+.slot-examples-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.slot-example-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  transition: var(--transition);
+}
+
+.slot-example-card:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateX(3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.slot-example-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slot-context-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.btn-speak-example {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: var(--transition);
+}
+
+.btn-speak-example:hover {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+  transform: scale(1.04);
+}
+
+.slot-example-en {
   font-family: var(--font-mono);
   font-size: 1.05rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0.4rem 0;
+  line-height: 1.5;
+  margin-top: 0.2rem;
 }
 
-.demo-cn {
+.slot-example-cn {
   font-size: 0.9rem;
   color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 .user-slot-custom-card {
@@ -1794,4 +1882,276 @@ footer {
   .audio-controls-row {
     flex-direction: column;
   }
+}
+
+/* ========================================================
+   PLAYBACK SPEED CONTROLLER MODAL (播放速度選單)
+   ======================================================== */
+.speed-modal-box {
+  max-width: 460px;
+  background: #11151f;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(2, 132, 199, 0.15);
+  animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleUp {
+  from { opacity: 0; transform: scale(0.93) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.speed-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-speed-back {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.btn-speed-back:hover {
+  color: #38bdf8;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.speed-back-arrow {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.speed-target-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: #090c13;
+  padding: 4px;
+  border-radius: 12px;
+  margin: 1.25rem 0 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.speed-target-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 0.6rem 0.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.speed-target-tab:hover {
+  color: #ffffff;
+}
+
+.speed-target-tab.active {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(2, 132, 199, 0.4);
+}
+
+.speed-big-display {
+  text-align: center;
+  margin: 1.25rem 0 0.25rem;
+  font-size: 3.2rem;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  text-shadow: 0 4px 15px rgba(2, 132, 199, 0.2);
+}
+
+.speed-unit {
+  font-size: 2rem;
+  color: #38bdf8;
+  margin-left: 2px;
+}
+
+.speed-desc-hint {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+/* Slider and Stepper buttons row (matching user screenshot) */
+.speed-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 0 0.5rem;
+}
+
+.speed-step-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #1c2333;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 1.6rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.speed-step-btn:hover {
+  background: #2a344d;
+  border-color: #38bdf8;
+  transform: scale(1.06);
+}
+
+.speed-step-btn:active {
+  transform: scale(0.94);
+}
+
+.speed-slider-track-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.speed-range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: #232a3d;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+.speed-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: grab;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6), 0 2px 4px rgba(0, 0, 0, 0.4);
+  transition: transform 0.1s ease;
+}
+
+.speed-range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.speed-range-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: none;
+  cursor: grab;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6), 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Preset Quick Pill Buttons (matching user screenshot) */
+.speed-presets-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.6rem;
+}
+
+.speed-presets-grid {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.speed-presets-grid::-webkit-scrollbar {
+  height: 4px;
+}
+
+.speed-presets-grid::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.speed-preset-pill {
+  flex: 1;
+  min-width: 65px;
+  padding: 0.65rem 0.5rem;
+  background: #1c2333;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  color: #e2e8f0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+.speed-preset-pill:hover {
+  background: #2a344d;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.speed-preset-pill.active {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #ffffff;
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px);
+}
+
+.speed-preset-val {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.speed-preset-sub {
+  font-size: 0.68rem;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+.speed-preset-pill.active .speed-preset-sub {
+  opacity: 1;
+  color: #0369a1;
+}
+
+.speed-action-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }

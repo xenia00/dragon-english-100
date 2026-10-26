@@ -1,0 +1,19 @@
+{
+  "name": "Dragon English 100 - 極限暗記暗誦",
+  "short_name": "Dragon 100",
+  "description": "日本東大特訓班名師竹岡廣信經典《Dragon English 基本英文100》大腦骨架訓練 Web 應用",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#080c14",
+  "theme_color": "#080c14",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

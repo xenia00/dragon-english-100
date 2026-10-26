@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dragon English 100 - 竹岡廣信「極限暗記暗誦」學習系統</title>
   <meta name="description" content="依據日本東大特訓班《龍櫻》名師竹岡廣信經典《Dragon English 基本英文100》打造的高效英語大腦骨架訓練 Web 應用。">
+  <meta name="theme-color" content="#080c14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,6 +53,9 @@
       </nav>
 
       <div class="header-actions">
+        <a href="mobile.html" class="btn-pill" style="text-decoration: none; font-size: 0.78rem; padding: 0.35rem 0.75rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.35); font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;" title="開啟手機極速掌中版">
+          <span>📱</span> 手機專屬版
+        </a>
         <div class="header-stats-pill" title="100 句盲測全通關進度">
           <span class="stat-green-dot"></span>
           <span id="header-mastered-count">0/100 綠燈</span>
@@ -149,11 +158,9 @@
                   <div class="block-title" style="margin-bottom: 0;"><span>🧩</span> 標準英文句型與骨架提取</div>
                   <div style="display: flex; gap: 0.4rem; align-items: center;">
                     <button class="btn-pill" id="btn-step1-speak" style="font-size: 0.78rem; padding: 0.3rem 0.7rem;" title="播放標準原音">
-                      <span>▶</span> 原音 (1.0x)
+                      <span>▶</span> 播放原音
                     </button>
-                    <button class="btn-pill" id="btn-step1-speak-half" style="font-size: 0.78rem; padding: 0.3rem 0.7rem; color: #38bdf8; border-color: rgba(2, 132, 199, 0.4);" title="0.5 倍慢速朗讀，聽清每個單字發音細節">
-                      <span>🐢</span> 0.5x 慢速
-                    </button>
+                    <button class="btn-icon" id="btn-step1-tune" style="width: 28px; height: 28px; font-size: 0.75rem;" title="開啟調速選單">⚙️</button>
                   </div>
                 </div>
                 <div class="english-sentence-preview" id="deconstruct-en-preview">
@@ -220,27 +227,17 @@
 
                 <!-- Audio Speed & Voice Controls -->
                 <div class="audio-controls-row">
-                  <button class="btn-play-large" id="btn-play-shadow" title="以當前語速朗讀原音 (Space)">
+                  <button class="btn-play-large" id="btn-play-shadow" title="播放英文原音 (Space)">
                     <span>▶</span> 播放原音 (Space)
                   </button>
 
-                  <button class="btn-play-half" id="btn-play-half-speed" title="以 0.5 倍超慢速朗讀，聽清每個單字咬字與連音細節">
-                    <span>🐢</span> 0.5x 慢速朗讀
+                  <button class="btn-tune-speed" id="btn-open-speed-modal" title="開啟播放速度調整選單 (0.3x ~ 2.0x)">
+                    <span>⚙️ 調整速度 (<span id="current-speed-tag">1.00x</span>)</span>
                   </button>
 
                   <button class="btn-pill" id="btn-loop-shadow">
                     🔄 開始循環跟讀 (3次)
                   </button>
-
-                  <div class="audio-settings-group">
-                    <span>⚡ 語速:</span>
-                    <select class="select-rate" id="select-rate">
-                      <option value="0.5">0.5x (超慢清晰)</option>
-                      <option value="0.8">0.8x (慢速雕刻)</option>
-                      <option value="1.0" selected>1.0x (標準語速)</option>
-                      <option value="1.2">1.2x (極速挑戰)</option>
-                    </select>
-                  </div>
 
                   <div class="audio-settings-group">
                     <span>🗣️ 口音:</span>
@@ -365,14 +362,14 @@
                 </div>
               </div>
 
-              <!-- Official Substitution Demo -->
+              <!-- Official Substitution Demo (3 Practical Scenarios with Audio) -->
               <div class="demo-substitution-box">
-                <div class="block-title"><span>💼</span> 實戰情境抽換示範 (職場/日常實用)</div>
-                <div class="demo-en" id="demo-slot-en">
-                  It would be unwise to deploy the code and leave the office immediately.
+                <div class="block-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+                  <span>💼 實戰情境抽換示範 (職場 / 日常 / 溝通 3 大例句)</span>
+                  <span class="shortcuts-hint" style="font-weight: 500; color: #38bdf8;">點擊 🔊 聆聽英文原音</span>
                 </div>
-                <div class="demo-cn" id="demo-slot-cn">
-                  發布代碼後立刻離開辦公室是極不明智的。
+                <div class="slot-examples-list" id="slot-examples-list">
+                  <!-- Dynamically rendered 3 examples with audio buttons -->
                 </div>
               </div>
 
@@ -693,6 +690,65 @@
     </div>
   </div>
 
+  <!-- PLAYBACK SPEED CONTROLLER MODAL (播放速度調整選單) -->
+  <div class="modal-overlay" id="speed-modal">
+    <div class="modal-box speed-modal-box">
+      <!-- Modal Header matching user screenshot -->
+      <div class="speed-modal-header">
+        <button class="btn-speed-back" id="btn-close-speed">
+          <span class="speed-back-arrow">‹</span>
+          <span class="speed-header-title">播放速度</span>
+        </button>
+        <button class="btn-icon" id="btn-close-speed-x" title="關閉" style="border: none; background: transparent; font-size: 1.1rem;">✕</button>
+      </div>
+
+      <div class="speed-modal-body">
+        <!-- Big Speed Display: matching screenshot (e.g. 1.00x) -->
+        <div class="speed-big-display">
+          <span id="speed-display-num">1.00</span><span class="speed-unit">x</span>
+        </div>
+        <div class="speed-desc-hint" id="speed-desc-hint">
+          調整英文原音朗讀速度 (0.3x ~ 2.0x)
+        </div>
+
+        <!-- Slider with [-] and [+] Stepper Buttons (matching screenshot) -->
+        <div class="speed-slider-row">
+          <button class="speed-step-btn" id="btn-speed-minus" title="微調減少 (-0.05x)">
+            <span>−</span>
+          </button>
+          <div class="speed-slider-track-wrap">
+            <input 
+              type="range" 
+              class="speed-range-slider" 
+              id="speed-range-slider" 
+              min="0.30" 
+              max="2.00" 
+              step="0.05" 
+              value="1.00"
+            >
+          </div>
+          <button class="speed-step-btn" id="btn-speed-plus" title="微調增加 (+0.05x)">
+            <span>+</span>
+          </button>
+        </div>
+
+        <!-- Preset Quick Pill Buttons (matching screenshot) -->
+        <div class="speed-presets-label">快速預設檔位</div>
+        <div class="speed-presets-grid" id="speed-presets-grid"></div>
+
+        <!-- Test Listen & Done Footer -->
+        <div class="speed-action-footer">
+          <button class="btn-pill" id="btn-test-speed" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: #0284c7; padding: 0.6rem 1.2rem; font-weight: 700;">
+            <span>🔊</span> 試聽此速度
+          </button>
+          <button class="btn-submit-recall" id="btn-apply-speed" style="padding: 0.6rem 1.5rem;">
+            完成設定
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- SHORTCUTS MODAL -->
   <div class="modal-overlay" id="shortcuts-modal">
     <div class="modal-box" style="max-width: 550px;">
@@ -708,11 +764,7 @@
           </tr>
           <tr style="border-bottom: 1px solid var(--bg-card-border);">
             <td style="padding: 0.6rem 0; font-family: var(--font-mono); color: #38bdf8;">Ctrl + Space</td>
-            <td style="color: var(--text-secondary);">隨時朗讀當前句子原音 (1.0x)</td>
-          </tr>
-          <tr style="border-bottom: 1px solid var(--bg-card-border);">
-            <td style="padding: 0.6rem 0; font-family: var(--font-mono); color: #38bdf8;">Ctrl + Alt + Space</td>
-            <td style="color: var(--text-secondary);">隨時以 0.5 倍慢速朗讀 (聽清細節)</td>
+            <td style="color: var(--text-secondary);">隨時朗讀當前句子原音</td>
           </tr>
           <tr style="border-bottom: 1px solid var(--bg-card-border);">
             <td style="padding: 0.6rem 0; font-family: var(--font-mono); color: #38bdf8;">Tab</td>
@@ -744,6 +796,7 @@
 
   <!-- Scripts -->
   <script src="data.js"></script>
+  <script src="examples.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

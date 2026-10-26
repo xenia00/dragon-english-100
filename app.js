@@ -28,8 +28,13 @@ class DragonApp {
       soundFx: true,
       voicePref: 'en-US',
       strictMode: false,
-      countdownEnabled: true
+      countdownEnabled: true,
+      playbackSpeed: 1.00
     });
+    if (!this.settings.playbackSpeed) {
+      this.settings.playbackSpeed = this.settings.normalRate || 1.00;
+    }
+    this.speechRate = this.settings.playbackSpeed;
 
     // Survival state
     this.survival = {
@@ -63,6 +68,7 @@ class DragonApp {
     this.renderExplorer();
     this.loadSentence(1);
     this.updateGlobalStats();
+    this.updateSpeedDisplayTag();
   }
 
   // --- Storage Helper ---
@@ -247,6 +253,95 @@ class DragonApp {
     });
   }
 
+  // --- Playback Speed Controller Modal ---
+  openSpeedModal() {
+    const modal = document.getElementById('speed-modal');
+    if (!modal) return;
+
+    const currentRate = this.settings.playbackSpeed || 1.00;
+    this.setSpeedDisplayOnly(currentRate);
+    this.renderSpeedPresets(currentRate);
+    modal.classList.add('open');
+  }
+
+  closeSpeedModal() {
+    const modal = document.getElementById('speed-modal');
+    if (modal) modal.classList.remove('open');
+  }
+
+  setSpeedDisplayOnly(val) {
+    const displayNum = document.getElementById('speed-display-num');
+    if (displayNum) displayNum.textContent = val.toFixed(2);
+
+    const slider = document.getElementById('speed-range-slider');
+    if (slider) slider.value = val;
+
+    const descEl = document.getElementById('speed-desc-hint');
+    if (descEl) {
+      if (val <= 0.55) descEl.textContent = '超慢清晰，字字分明，拆解連音與弱讀細節';
+      else if (val <= 0.85) descEl.textContent = '慢速朗讀，適合跟讀初階與咬字雕刻';
+      else if (val <= 1.15) descEl.textContent = '母語人士正常自然會話語速 (常規)';
+      else if (val <= 1.45) descEl.textContent = '流利快讀，挑戰大腦瞬間英語骨架反射';
+      else descEl.textContent = '倍速極限挑戰，高壓磨練聽覺神經反應';
+    }
+  }
+
+  setSpeedValue(val) {
+    val = Math.max(0.30, Math.min(2.00, Math.round(val * 100) / 100));
+    this.settings.playbackSpeed = val;
+    this.speechRate = val;
+    this.saveStorage('dragon_settings', this.settings);
+    this.updateSpeedDisplayTag();
+    this.setSpeedDisplayOnly(val);
+    this.highlightActivePreset(val);
+  }
+
+  renderSpeedPresets(currentVal) {
+    const container = document.getElementById('speed-presets-grid');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const presets = [
+      { val: 0.50, sub: '超慢清晰' },
+      { val: 0.75, sub: '慢速拆解' },
+      { val: 1.00, sub: '正常原速' },
+      { val: 1.25, sub: '自然流利' },
+      { val: 1.50, sub: '快速挑戰' },
+      { val: 2.00, sub: '極限倍速' }
+    ];
+
+    presets.forEach(p => {
+      const pill = document.createElement('div');
+      pill.className = 'speed-preset-pill';
+      pill.dataset.val = p.val;
+      if (Math.abs(currentVal - p.val) < 0.02) {
+        pill.classList.add('active');
+      }
+      pill.innerHTML = `
+        <span class="speed-preset-val">${p.val.toFixed(2)}x</span>
+        <span class="speed-preset-sub">${p.sub}</span>
+      `;
+      pill.addEventListener('click', () => {
+        this.setSpeedValue(p.val);
+        this.playSound('tick');
+      });
+      container.appendChild(pill);
+    });
+  }
+
+  highlightActivePreset(currentVal) {
+    document.querySelectorAll('.speed-preset-pill').forEach(pill => {
+      const val = parseFloat(pill.dataset.val);
+      pill.classList.toggle('active', Math.abs(currentVal - val) < 0.02);
+    });
+  }
+
+  updateSpeedDisplayTag() {
+    const spd = this.settings.playbackSpeed || 1.00;
+    const tag = document.getElementById('current-speed-tag');
+    if (tag) tag.textContent = `${spd.toFixed(2)}x`;
+  }
+
   // --- Sentence Operations ---
   getItemById(id) {
     return this.sentences.find(s => s.id === id) || this.sentences[0];
@@ -300,8 +395,7 @@ class DragonApp {
 
     // Step 4: Slot Sandbox
     document.getElementById('slot-formula-display').textContent = item.skeleton;
-    document.getElementById('demo-slot-en').textContent = item.slot_example.custom_demo;
-    document.getElementById('demo-slot-cn').textContent = item.slot_example.custom_cn;
+    this.renderSlotExamples(item.id);
 
     const savedUserSlot = this.customSlots[item.id];
     document.getElementById('user-slot-en-input').value = savedUserSlot ? savedUserSlot.en : '';
@@ -318,6 +412,44 @@ class DragonApp {
     });
 
     this.updateGlobalStats();
+  }
+
+  renderSlotExamples(id) {
+    const listContainer = document.getElementById('slot-examples-list');
+    if (!listContainer) return;
+    listContainer.innerHTML = '';
+
+    const examples = (typeof DRAGON_100_EXAMPLES !== 'undefined' && DRAGON_100_EXAMPLES[id])
+      ? DRAGON_100_EXAMPLES[id]
+      : (this.getItemById(id)?.slot_example ? [
+          {
+            tag: '日常情境',
+            en: this.getItemById(id).slot_example.custom_demo,
+            cn: this.getItemById(id).slot_example.custom_cn
+          }
+        ] : []);
+
+    examples.forEach((ex, idx) => {
+      const card = document.createElement('div');
+      card.className = 'slot-example-card';
+      card.innerHTML = `
+        <div class="slot-example-top">
+          <span class="slot-context-badge">${this.escapeHtml(ex.tag || `例句 ${idx + 1}`)}</span>
+          <button class="btn-speak-example" title="播放此例句原音">
+            <span>🔊</span> 朗讀原音
+          </button>
+        </div>
+        <div class="slot-example-en">${this.escapeHtml(ex.en)}</div>
+        <div class="slot-example-cn">${this.escapeHtml(ex.cn)}</div>
+      `;
+
+      card.querySelector('.btn-speak-example').addEventListener('click', () => {
+        this.speakSentence(ex.en);
+        this.showToast(`🔊 正在朗讀：${ex.tag}`);
+      });
+
+      listContainer.appendChild(card);
+    });
   }
 
   renderShadowingText(text) {
@@ -748,7 +880,6 @@ class DragonApp {
         </div>
         <div class="row-actions">
           <button class="btn-icon btn-row-speak" title="原音朗讀">🔊</button>
-          <button class="btn-icon btn-row-speak-half" title="0.5x 慢速朗讀">🐢</button>
           <button class="btn-pill btn-row-study" style="font-size: 0.8rem;">研練</button>
         </div>
       `;
@@ -756,12 +887,6 @@ class DragonApp {
       row.querySelector('.btn-row-speak').addEventListener('click', (e) => {
         e.stopPropagation();
         this.speakSentence(item.en);
-      });
-
-      row.querySelector('.btn-row-speak-half').addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.speakSentence(item.en, null, 0.5);
-        this.showToast(`No.${item.id} 0.5x 慢速播放中`);
       });
 
       row.querySelector('.btn-row-study').addEventListener('click', () => {
@@ -1114,18 +1239,16 @@ class DragonApp {
     document.getElementById('btn-step1-speak')?.addEventListener('click', () => {
       this.speakSentence(this.getItemById(this.currentId).en);
     });
-    document.getElementById('btn-step1-speak-half')?.addEventListener('click', () => {
-      this.speakSentence(this.getItemById(this.currentId).en, null, 0.5);
-      this.showToast('🐢 0.5x 慢速朗讀中，仔細聽清單字與連音...');
+    document.getElementById('btn-step1-tune')?.addEventListener('click', () => {
+      this.openSpeedModal();
     });
 
     // Step 2 Shadowing Controls
     document.getElementById('btn-play-shadow')?.addEventListener('click', () => {
       this.speakSentence(this.getItemById(this.currentId).en);
     });
-    document.getElementById('btn-play-half-speed')?.addEventListener('click', () => {
-      this.speakSentence(this.getItemById(this.currentId).en, null, 0.5);
-      this.showToast('🐢 0.5x 慢速朗讀中，仔細聽清單字與連音...');
+    document.getElementById('btn-open-speed-modal')?.addEventListener('click', () => {
+      this.openSpeedModal();
     });
     document.getElementById('btn-loop-shadow')?.addEventListener('click', () => {
       this.toggleShadowLoop();
@@ -1136,12 +1259,47 @@ class DragonApp {
       this.showToast('跟讀完成！自動進入極限盲測');
       this.switchStep(3);
     });
-    document.getElementById('select-rate')?.addEventListener('change', (e) => {
-      this.speechRate = parseFloat(e.target.value);
-    });
     document.getElementById('select-voice')?.addEventListener('change', (e) => {
       const voices = window.speechSynthesis.getVoices();
       this.speechVoice = voices.find(v => v.voiceURI === e.target.value);
+    });
+
+    // Speed Modal Controls (matching user screenshot)
+    document.getElementById('btn-close-speed')?.addEventListener('click', () => {
+      this.closeSpeedModal();
+    });
+    document.getElementById('btn-close-speed-x')?.addEventListener('click', () => {
+      this.closeSpeedModal();
+    });
+    document.getElementById('btn-apply-speed')?.addEventListener('click', () => {
+      this.closeSpeedModal();
+      this.showToast('✓ 播放速度已儲存');
+    });
+    document.getElementById('speed-modal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'speed-modal') {
+        this.closeSpeedModal();
+      }
+    });
+
+    document.getElementById('btn-speed-minus')?.addEventListener('click', () => {
+      const cur = this.settings.playbackSpeed || 1.00;
+      this.setSpeedValue(cur - 0.05);
+      this.playSound('tick');
+    });
+    document.getElementById('btn-speed-plus')?.addEventListener('click', () => {
+      const cur = this.settings.playbackSpeed || 1.00;
+      this.setSpeedValue(cur + 0.05);
+      this.playSound('tick');
+    });
+
+    document.getElementById('speed-range-slider')?.addEventListener('input', (e) => {
+      this.setSpeedValue(parseFloat(e.target.value));
+    });
+
+    document.getElementById('btn-test-speed')?.addEventListener('click', () => {
+      const targetRate = this.settings.playbackSpeed || 1.00;
+      this.speakSentence(this.getItemById(this.currentId).en, null, targetRate);
+      this.showToast(`🔊 正在以 ${targetRate.toFixed(2)}x 試聽原句`);
     });
 
     // Step 3 Blind Recall Controls
@@ -1263,13 +1421,6 @@ class DragonApp {
       if (e.ctrlKey && !e.altKey && e.code === 'Space') {
         e.preventDefault();
         this.speakSentence(this.getItemById(this.currentId).en);
-      }
-
-      // Ctrl + Alt + Space to speak at 0.5x slow speed
-      if (e.ctrlKey && e.altKey && e.code === 'Space') {
-        e.preventDefault();
-        this.speakSentence(this.getItemById(this.currentId).en, null, 0.5);
-        this.showToast('🐢 0.5x 慢速朗讀中...');
       }
 
       // Tab for Peek Hint in recall step
