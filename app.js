@@ -195,6 +195,9 @@ class DragonApp {
     utterance.rate = (customRate !== null) ? customRate : this.speechRate;
     if (this.speechVoice) {
       utterance.voice = this.speechVoice;
+      utterance.lang = this.speechVoice.lang || 'en-US';
+    } else {
+      utterance.lang = 'en-US';
     }
 
     const waveform = document.getElementById('audio-waveform');

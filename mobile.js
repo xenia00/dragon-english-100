@@ -158,10 +158,24 @@ class DragonMobileApp {
     }
     window.speechSynthesis.cancel();
 
+    // Re-verify and refresh speechVoice pointer from live system voices if needed
+    if (this.settings.voiceName || this.settings.voiceURI) {
+      const all = window.speechSynthesis.getVoices();
+      if (all && all.length > 0) {
+        const match = all.find(v => (this.settings.voiceName && v.name === this.settings.voiceName) || (this.settings.voiceURI && v.voiceURI === this.settings.voiceURI));
+        if (match) this.speechVoice = match;
+      }
+    }
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = (customRate !== null) ? customRate : (this.settings.playbackSpeed || 1.00);
+
+    // Explicitly set both utterance.voice AND utterance.lang (Crucial for Android & Samsung TTS)
     if (this.speechVoice) {
       utterance.voice = this.speechVoice;
+      utterance.lang = this.speechVoice.lang || 'en-US';
+    } else {
+      utterance.lang = 'en-US';
     }
 
     const pulseRing = document.getElementById('audio-pulse-ring');
@@ -207,11 +221,13 @@ class DragonMobileApp {
 
     const loadVoices = () => {
       const allVoices = window.speechSynthesis.getVoices();
-      this.voices = allVoices.filter(v => v.lang.toLowerCase().startsWith('en'));
-      if (this.voices.length === 0) {
-        this.voices = allVoices; // fallback if no specific en filter matches
+      if (allVoices && allVoices.length > 0) {
+        this.voices = allVoices.filter(v => v.lang.toLowerCase().startsWith('en'));
+        if (this.voices.length === 0) {
+          this.voices = allVoices;
+        }
+        this.populateVoiceSelect();
       }
-      this.populateVoiceSelect();
     };
 
     loadVoices();
@@ -224,31 +240,41 @@ class DragonMobileApp {
     const select = document.getElementById('sheet-voice-select');
     if (!select) return;
 
+    // Refresh voices from browser
+    const allVoices = window.speechSynthesis.getVoices();
+    if (allVoices && allVoices.length > 0) {
+      this.voices = allVoices.filter(v => v.lang.toLowerCase().startsWith('en'));
+      if (this.voices.length === 0) this.voices = allVoices;
+    }
+
     select.innerHTML = '';
     if (this.voices.length === 0) {
       const opt = document.createElement('option');
       opt.value = '';
-      opt.textContent = '系統預設英文語音';
+      opt.textContent = '系統預設英文語音 (點擊重新整理)';
       select.appendChild(opt);
       return;
     }
 
     this.voices.forEach((voice) => {
       const opt = document.createElement('option');
-      opt.value = voice.voiceURI;
+      opt.value = voice.name;
       opt.textContent = `${voice.name} (${voice.lang})${voice.default ? ' [預設]' : ''}`;
       select.appendChild(opt);
     });
 
+    const savedName = this.settings.voiceName;
     const savedURI = this.settings.voiceURI;
-    if (savedURI && this.voices.some(v => v.voiceURI === savedURI)) {
-      select.value = savedURI;
-      this.speechVoice = this.voices.find(v => v.voiceURI === savedURI);
+    const foundVoice = this.voices.find(v => (savedName && v.name === savedName) || (savedURI && v.voiceURI === savedURI));
+
+    if (foundVoice) {
+      select.value = foundVoice.name;
+      this.speechVoice = foundVoice;
     } else {
       const targetAccent = this.selectedAccent || 'en-US';
       const matchingVoice = this.voices.find(v => v.lang.replace('_', '-').toLowerCase().startsWith(targetAccent.toLowerCase())) || this.voices[0];
       if (matchingVoice) {
-        select.value = matchingVoice.voiceURI;
+        select.value = matchingVoice.name;
         this.speechVoice = matchingVoice;
       }
     }
@@ -262,16 +288,25 @@ class DragonMobileApp {
       tab.classList.toggle('active', tab.dataset.lang === langPrefix);
     });
 
+    // Refresh voices list in case newly loaded
+    const allVoices = window.speechSynthesis.getVoices();
+    if (allVoices && allVoices.length > 0) {
+      this.voices = allVoices.filter(v => v.lang.toLowerCase().startsWith('en'));
+      if (this.voices.length === 0) this.voices = allVoices;
+    }
+
     const matchingVoice = this.voices.find(v => v.lang.replace('_', '-').toLowerCase().startsWith(langPrefix.toLowerCase()));
     if (matchingVoice) {
       this.speechVoice = matchingVoice;
+      this.settings.voiceName = matchingVoice.name;
       this.settings.voiceURI = matchingVoice.voiceURI;
+      this.settings.voiceLang = matchingVoice.lang;
       const select = document.getElementById('sheet-voice-select');
-      if (select) select.value = matchingVoice.voiceURI;
+      if (select) select.value = matchingVoice.name;
       this.saveStorage('dragon_settings', this.settings);
-      this.showToast(`已切換口音：${matchingVoice.name}`);
+      this.showToast(`已切換：${matchingVoice.name}`);
     } else {
-      this.showToast(`已切換偏好，若系統無特定語音將使用預設`);
+      this.showToast(`已切換偏好 (${langPrefix})，使用系統預設`);
     }
   }
 
@@ -779,6 +814,9 @@ class DragonMobileApp {
     const backdrop = document.getElementById('sheet-backdrop');
     if (!sheet || !backdrop) return;
 
+    // Refresh voices every time sheet opens
+    this.populateVoiceSelect();
+
     const rate = this.settings.playbackSpeed || 1.00;
     this.setSpeedDisplayOnly(rate);
     this.renderSheetPresets(rate);
@@ -1135,10 +1173,12 @@ class DragonMobileApp {
     });
 
     document.getElementById('sheet-voice-select')?.addEventListener('change', (e) => {
-      const voice = this.voices.find(v => v.voiceURI === e.target.value);
+      const voice = this.voices.find(v => v.name === e.target.value || v.voiceURI === e.target.value);
       if (voice) {
         this.speechVoice = voice;
+        this.settings.voiceName = voice.name;
         this.settings.voiceURI = voice.voiceURI;
+        this.settings.voiceLang = voice.lang;
         this.saveStorage('dragon_settings', this.settings);
         this.showToast(`已選用語音：${voice.name}`);
       }
