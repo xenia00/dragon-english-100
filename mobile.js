@@ -668,12 +668,18 @@ class DragonMobileApp {
     }
 
     this.buildPlayerQueue();
-    this.playNextInQueue();
+    // 從當前顯示的句子開始播放
+    const idx = this.player.queue.indexOf(this.currentId);
+    this.player.queueIndex = (idx !== -1) ? idx : 0;
+
+    this.playCurrentInQueue();
   }
 
   pauseContinuousPlayer() {
     this.player.isPlaying = false;
+    this.player.playToken = (this.player.playToken || 0) + 1; // 立即讓所有待執行回呼失效
     clearTimeout(this.player.timer);
+    this.player.timer = null;
     this.stopSpeech();
 
     const btnIcon = document.getElementById('player-play-icon');
@@ -692,45 +698,108 @@ class DragonMobileApp {
     } else if (this.player.loopMode === 'repeat-single') {
       this.player.queue = [this.currentId];
     } else {
-      // 1 to 100 starting from currentId
+      // 1 到 100 完整順序
       const allIds = [];
-      for (let i = this.currentId; i <= 100; i++) allIds.push(i);
-      for (let i = 1; i < this.currentId; i++) allIds.push(i);
+      for (let i = 1; i <= 100; i++) allIds.push(i);
       this.player.queue = allIds;
     }
-    this.player.queueIndex = 0;
   }
 
-  playNextInQueue() {
+  playCurrentInQueue() {
     if (!this.player.isPlaying) return;
 
-    if (this.player.queue.length === 0) {
+    if (!this.player.queue || this.player.queue.length === 0) {
       this.showToast('播放隊列為空！');
       this.pauseContinuousPlayer();
       return;
     }
 
+    // 安全環形索引
+    if (this.player.queueIndex < 0) this.player.queueIndex = this.player.queue.length - 1;
+    if (this.player.queueIndex >= this.player.queue.length) this.player.queueIndex = 0;
+
     const currentId = this.player.queue[this.player.queueIndex];
     this.loadSentence(currentId);
 
     const item = this.getItemById(currentId);
-    
-    // Speak English sentence
+
+    // 撤銷舊計時器並產生新唯一的 token，徹底防止多重回呼疊加跳針
+    clearTimeout(this.player.timer);
+    this.player.timer = null;
+    const token = (this.player.playToken = (this.player.playToken || 0) + 1);
+
     this.speakSentence(item.en, () => {
-      if (!this.player.isPlaying) return;
+      // 若已暫停或已觸發了切換/重播（token 不符），立刻終止舊回呼，避免跳針
+      if (!this.player.isPlaying || token !== this.player.playToken) return;
 
-      // 1.5s interval pause before next
+      // 停頓 1.5 秒思維調動後推進下一首
       this.player.timer = setTimeout(() => {
-        if (!this.player.isPlaying) return;
+        if (!this.player.isPlaying || token !== this.player.playToken) return;
 
-        if (this.player.loopMode === 'repeat-single') {
-          this.playNextInQueue();
-        } else {
+        if (this.player.loopMode !== 'repeat-single') {
           this.player.queueIndex = (this.player.queueIndex + 1) % this.player.queue.length;
-          this.playNextInQueue();
         }
+        this.playCurrentInQueue();
       }, 1500);
     });
+  }
+
+  playerNext() {
+    this.playSound('tick');
+    // 1. 先停止：清除排程計時器、標記失效 token、停止發音
+    clearTimeout(this.player.timer);
+    this.player.timer = null;
+    this.player.playToken = (this.player.playToken || 0) + 1;
+    this.stopSpeech();
+
+    // 2. 切換：計算下一首序號
+    if (!this.player.queue || this.player.queue.length === 0) {
+      this.buildPlayerQueue();
+    }
+    const curIdx = this.player.queue.indexOf(this.currentId);
+    if (curIdx !== -1) {
+      this.player.queueIndex = (curIdx + 1) % this.player.queue.length;
+    } else {
+      this.player.queueIndex = (this.player.queueIndex + 1) % this.player.queue.length;
+    }
+    const nextId = this.player.queue[this.player.queueIndex];
+    this.loadSentence(nextId);
+
+    // 3. 再播放：若原本處於播放狀態，平滑重啟乾淨的朗讀
+    if (this.player.isPlaying) {
+      setTimeout(() => {
+        if (this.player.isPlaying) this.playCurrentInQueue();
+      }, 80);
+    }
+  }
+
+  playerPrev() {
+    this.playSound('tick');
+    // 1. 先停止：清除排程計時器、標記失效 token、停止發音
+    clearTimeout(this.player.timer);
+    this.player.timer = null;
+    this.player.playToken = (this.player.playToken || 0) + 1;
+    this.stopSpeech();
+
+    // 2. 切換：計算上一首序號
+    if (!this.player.queue || this.player.queue.length === 0) {
+      this.buildPlayerQueue();
+    }
+    const curIdx = this.player.queue.indexOf(this.currentId);
+    if (curIdx !== -1) {
+      this.player.queueIndex = (curIdx - 1 + this.player.queue.length) % this.player.queue.length;
+    } else {
+      this.player.queueIndex = (this.player.queueIndex - 1 + this.player.queue.length) % this.player.queue.length;
+    }
+    const prevId = this.player.queue[this.player.queueIndex];
+    this.loadSentence(prevId);
+
+    // 3. 再播放：若原本處於播放狀態，平滑重啟乾淨的朗讀
+    if (this.player.isPlaying) {
+      setTimeout(() => {
+        if (this.player.isPlaying) this.playCurrentInQueue();
+      }, 80);
+    }
   }
 
   // --- Sentence List (100 句清單) ---
@@ -1077,13 +1146,11 @@ class DragonMobileApp {
     });
 
     document.getElementById('btn-player-next')?.addEventListener('click', () => {
-      if (this.currentId < 100) this.loadSentence(this.currentId + 1);
-      if (this.player.isPlaying) this.playNextInQueue();
+      this.playerNext();
     });
 
     document.getElementById('btn-player-prev')?.addEventListener('click', () => {
-      if (this.currentId > 1) this.loadSentence(this.currentId - 1);
-      if (this.player.isPlaying) this.playNextInQueue();
+      this.playerPrev();
     });
 
     document.querySelectorAll('.player-mode-btn').forEach(btn => {
@@ -1093,9 +1160,9 @@ class DragonMobileApp {
         this.player.loopMode = btn.dataset.mode;
         this.playSound('tick');
         this.showToast(`播放模式：${btn.textContent.trim()}`);
-        if (this.player.isPlaying) {
-          this.buildPlayerQueue();
-        }
+        this.buildPlayerQueue();
+        const idx = this.player.queue.indexOf(this.currentId);
+        this.player.queueIndex = (idx !== -1) ? idx : 0;
       });
     });
 
