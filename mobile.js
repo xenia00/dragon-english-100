@@ -695,10 +695,8 @@ class DragonMobileApp {
   buildPlayerQueue() {
     if (this.player.loopMode === 'star') {
       this.player.queue = this.bookmarks.length > 0 ? [...this.bookmarks] : [this.currentId];
-    } else if (this.player.loopMode === 'repeat-single') {
-      this.player.queue = [this.currentId];
     } else {
-      // 1 到 100 完整順序
+      // 1 到 100 完整順序（循序連播與單句循環皆具備完整隊列，支援隨時前進/後退切換，切換後繼續單句循環）
       const allIds = [];
       for (let i = 1; i <= 100; i++) allIds.push(i);
       this.player.queue = allIds;
@@ -765,6 +763,11 @@ class DragonMobileApp {
     const nextId = this.player.queue[this.player.queueIndex];
     this.loadSentence(nextId);
 
+    // 提示使用者當前單句循環對象已切換
+    if (this.player.loopMode === 'repeat-single') {
+      this.showToast(`🔂 單句循環：No.${String(nextId).padStart(2, '0')}`);
+    }
+
     // 3. 再播放：若原本處於播放狀態，平滑重啟乾淨的朗讀
     if (this.player.isPlaying) {
       setTimeout(() => {
@@ -793,6 +796,11 @@ class DragonMobileApp {
     }
     const prevId = this.player.queue[this.player.queueIndex];
     this.loadSentence(prevId);
+
+    // 提示使用者當前單句循環對象已切換
+    if (this.player.loopMode === 'repeat-single') {
+      this.showToast(`🔂 單句循環：No.${String(prevId).padStart(2, '0')}`);
+    }
 
     // 3. 再播放：若原本處於播放狀態，平滑重啟乾淨的朗讀
     if (this.player.isPlaying) {
