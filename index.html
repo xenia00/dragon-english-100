@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dragon English 100 - 竹岡廣信「極限暗記暗誦」學習系統</title>
+  <meta name="description" content="依據日本東大特訓班《龍櫻》名師竹岡廣信經典《Dragon English 基本英文100》打造的高效英語大腦骨架訓練 Web 應用。">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Ambient Background Lighting -->
+  <div class="bg-ambient"></div>
+
+  <!-- Header & Navigation -->
+  <header>
+    <div class="header-container">
+      <div class="brand" onclick="app.switchView('study')">
+        <div class="brand-icon">龍</div>
+        <div class="brand-titles">
+          <div class="brand-main">
+            Dragon English 100
+            <span class="brand-badge">東大特訓班・竹岡流</span>
+          </div>
+          <div class="brand-sub">極限暗記暗誦・100 核心骨架認知工程</div>
+        </div>
+      </div>
+
+      <nav class="nav-tabs">
+        <button class="nav-tab-btn active" data-view="study">
+          <span>🎯</span> 核心訓練
+        </button>
+        <button class="nav-tab-btn" data-view="grid">
+          <span>🟩</span> 100 句通關牆
+        </button>
+        <button class="nav-tab-btn" data-view="sprint">
+          <span>⚡</span> 每日衝刺 (5句)
+        </button>
+        <button class="nav-tab-btn" data-view="survival">
+          <span>🏆</span> 生存挑戰
+        </button>
+        <button class="nav-tab-btn" data-view="explorer">
+          <span>🔍</span> 句庫速查
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <div class="header-stats-pill" title="100 句盲測全通關進度">
+          <span class="stat-green-dot"></span>
+          <span id="header-mastered-count">0/100 綠燈</span>
+        </div>
+        <button class="btn-icon" id="btn-open-guide" title="竹岡廣信暗記暗誦法導讀">📖</button>
+        <button class="btn-icon" id="btn-open-shortcuts" title="鍵盤快捷鍵指南">⌨️</button>
+        <button class="btn-icon" id="btn-toggle-sound" title="切換音效提示">🔔</button>
+        <button class="btn-icon" id="btn-toggle-theme" title="切換深淺模式">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Areas -->
+  <main>
+
+    <!-- VIEW 1: STUDY & FOUR-STEP INTERACTIVE WORKSPACE -->
+    <section class="view-section active" data-view="study" id="view-study">
+      <div class="study-layout">
+        
+        <!-- Left Sidebar: Mini Grid & Quick Selector -->
+        <aside class="study-sidebar">
+          <div class="sidebar-header">
+            <span class="sidebar-title"><span>🧭</span> 100 句快速導航</span>
+            <span class="shortcuts-hint">點選任意序號</span>
+          </div>
+
+          <!-- Mini 10x10 Grid -->
+          <div class="mini-grid" id="mini-grid"></div>
+
+          <!-- Grid Status Legend -->
+          <div class="grid-legend">
+            <div class="legend-item"><span class="legend-dot" style="background: var(--grid-unstarted);"></span>未學習</div>
+            <div class="legend-item"><span class="legend-dot" style="background: var(--grid-learning);"></span>解構中</div>
+            <div class="legend-item"><span class="legend-dot" style="background: var(--grid-shadowed);"></span>跟讀過</div>
+            <div class="legend-item"><span class="legend-dot" style="background: var(--grid-mastered);"></span>盲測全通</div>
+          </div>
+
+          <!-- Sidebar Quick Sentence List -->
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-top: 0.5rem;">
+            📜 句型目錄清單
+          </div>
+          <div class="sidebar-list-container" id="sidebar-sentence-list"></div>
+        </aside>
+
+        <!-- Right Main Panel: Four-Step Training Deck -->
+        <div class="study-card-panel">
+          
+          <!-- Card Header Bar -->
+          <div class="card-header-bar">
+            <div class="card-index-title">
+              <span class="card-number-badge" id="card-id-badge">No. 01</span>
+              <span class="card-category-tag" id="card-category-tag">形式主詞與假設語氣</span>
+            </div>
+            <div class="card-nav-controls">
+              <button class="btn-pill btn-bookmark" id="btn-bookmark">☆ 收藏</button>
+              <button class="btn-pill" id="btn-prev-sentence" title="上一句 (Alt + ←)">◀ 上一句</button>
+              <button class="btn-pill" id="btn-next-sentence" title="下一句 (Alt + →)">下一句 ▶</button>
+            </div>
+          </div>
+
+          <!-- Four-Step Tabs Header -->
+          <div class="step-tabs-container">
+            <button class="step-tab active" data-step="1">
+              <span class="step-tab-num">STEP 1</span>
+              <span class="step-tab-title">1. 概念解構</span>
+            </button>
+            <button class="step-tab" data-step="2">
+              <span class="step-tab-num">STEP 2</span>
+              <span class="step-tab-title">2. 影子跟讀</span>
+            </button>
+            <button class="step-tab" data-step="3">
+              <span class="step-tab-num">STEP 3</span>
+              <span class="step-tab-title">3. 極限盲測</span>
+            </button>
+            <button class="step-tab" data-step="4">
+              <span class="step-tab-num">STEP 4</span>
+              <span class="step-tab-title">4. 骨架替換</span>
+            </button>
+          </div>
+
+          <!-- The Chinese Sentence Banner (Always Visible anchor) -->
+          <div class="chinese-prompt-banner">
+            <div class="prompt-label-row">
+              <span class="prompt-label">📌 題目中文語意</span>
+              <button class="btn-toggle-simplified" id="btn-toggle-simplified">顯示意譯降解</button>
+            </div>
+            <div class="main-cn-text" id="prompt-main-cn">一天喝光兩瓶威士忌還開車是極其危險的。</div>
+            <div class="simplified-cn-text" id="prompt-simplified-cn">💡 和文和訳（思考降解）：如果喝了兩瓶威士忌又開車，那會非常危險。</div>
+          </div>
+
+          <!-- ========================================== -->
+          <!-- STEP 1 CONTENT: 概念解構                   -->
+          <!-- ========================================== -->
+          <div class="step-content-body active" data-step="1" id="step-1-body">
+            <div class="deconstruct-grid">
+              
+              <!-- English Standard & Syntax Skeleton -->
+              <div class="deconstruct-block">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
+                  <div class="block-title" style="margin-bottom: 0;"><span>🧩</span> 標準英文句型與骨架提取</div>
+                  <div style="display: flex; gap: 0.4rem; align-items: center;">
+                    <button class="btn-pill" id="btn-step1-speak" style="font-size: 0.78rem; padding: 0.3rem 0.7rem;" title="播放標準原音">
+                      <span>▶</span> 原音 (1.0x)
+                    </button>
+                    <button class="btn-pill" id="btn-step1-speak-half" style="font-size: 0.78rem; padding: 0.3rem 0.7rem; color: #38bdf8; border-color: rgba(2, 132, 199, 0.4);" title="0.5 倍慢速朗讀，聽清每個單字發音細節">
+                      <span>🐢</span> 0.5x 慢速
+                    </button>
+                  </div>
+                </div>
+                <div class="english-sentence-preview" id="deconstruct-en-preview">
+                  It would be dangerous to drink two bottles of whiskey and drive a car.
+                </div>
+                <div class="syntax-skeleton-tag" id="deconstruct-skeleton">
+                  It would be [Adj] to [Action 1] and [Action 2].
+                </div>
+              </div>
+
+              <!-- Core Grammar Explanation -->
+              <div class="deconstruct-block">
+                <div class="block-title"><span>📘</span> 核心文法精析</div>
+                <div class="grammar-explanation-text" id="deconstruct-grammar">
+                  虛擬語氣 / 形式主詞：用 It would be... 表設想情況而非既成事實；It 為形式主詞，真主詞為後面的不定詞片語 to drink... and drive...。
+                </div>
+              </div>
+
+              <!-- Pitfall & Native Mindset Alert -->
+              <div class="pitfall-alert-box">
+                <div class="pitfall-title"><span>⚠️</span> 竹岡流思維陷阱解析</div>
+                <div class="pitfall-body" id="deconstruct-pitfall">
+                  很多人直覺寫 It is dangerous...，但此處並非陳述某人正在做這件事的既成事實，而是對假定情境的推想，用 would 語氣更精準委婉。
+                </div>
+              </div>
+
+              <!-- Next Action Button -->
+              <div style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
+                <button class="btn-pill" onclick="app.switchStep(2)" style="background: var(--accent-cyan); color: #fff; border: none; padding: 0.65rem 1.4rem;">
+                  下一步：進入影子跟讀 ▶
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ========================================== -->
+          <!-- STEP 2 CONTENT: 影子跟讀 (Shadowing)      -->
+          <!-- ========================================== -->
+          <div class="step-content-body" data-step="2" id="step-2-body">
+            <div class="shadowing-container">
+              <div class="shadowing-card">
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                  🎧 聽原音節奏，語音肌肉同步跟讀
+                </div>
+                
+                <div class="shadowing-en-text" id="shadowing-en-text">
+                  It would be dangerous to drink two bottles of whiskey and drive a car.
+                </div>
+
+                <!-- Waveform Animation -->
+                <div class="audio-waveform" id="audio-waveform">
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                </div>
+
+                <!-- Audio Speed & Voice Controls -->
+                <div class="audio-controls-row">
+                  <button class="btn-play-large" id="btn-play-shadow" title="以當前語速朗讀原音 (Space)">
+                    <span>▶</span> 播放原音 (Space)
+                  </button>
+
+                  <button class="btn-play-half" id="btn-play-half-speed" title="以 0.5 倍超慢速朗讀，聽清每個單字咬字與連音細節">
+                    <span>🐢</span> 0.5x 慢速朗讀
+                  </button>
+
+                  <button class="btn-pill" id="btn-loop-shadow">
+                    🔄 開始循環跟讀 (3次)
+                  </button>
+
+                  <div class="audio-settings-group">
+                    <span>⚡ 語速:</span>
+                    <select class="select-rate" id="select-rate">
+                      <option value="0.5">0.5x (超慢清晰)</option>
+                      <option value="0.8">0.8x (慢速雕刻)</option>
+                      <option value="1.0" selected>1.0x (標準語速)</option>
+                      <option value="1.2">1.2x (極速挑戰)</option>
+                    </select>
+                  </div>
+
+                  <div class="audio-settings-group">
+                    <span>🗣️ 口音:</span>
+                    <select class="select-voice" id="select-voice"></select>
+                  </div>
+                </div>
+
+                <div class="shadowing-loop-badge">
+                  <span>💡 影子跟讀訣竅：耳朵聽到的半秒後，嘴巴立刻不看文字同步複誦，定型語音神經肌肉。</span>
+                </div>
+              </div>
+
+              <!-- Complete Shadowing Button -->
+              <button class="btn-shadow-complete" id="btn-shadow-complete">
+                <span>✓</span> 我已跟讀熟練，進入極限盲測
+              </button>
+            </div>
+          </div>
+
+          <!-- ========================================== -->
+          <!-- STEP 3 CONTENT: 極限盲測默寫 (Blind Recall)-->
+          <!-- ========================================== -->
+          <div class="step-content-body" data-step="3" id="step-3-body">
+            <div class="blind-recall-box">
+              
+              <!-- Countdown Bar -->
+              <div class="countdown-bar-container">
+                <div class="countdown-timer">
+                  <span>⚡ 3秒神經反射倒數:</span>
+                  <span class="timer-number" id="timer-count">3</span>
+                  <span id="reflex-badge" class="brand-badge" style="display: none; background: rgba(16, 185, 129, 0.15); color: #10b981; border-color: #10b981;">
+                    瞬發反射達成
+                  </span>
+                </div>
+                <div class="recall-options-row">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="chk-countdown" checked>
+                    開啟3秒倒數
+                  </label>
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="chk-strict-mode">
+                    嚴格模式 (精確大小寫與標點)
+                  </label>
+                </div>
+              </div>
+
+              <!-- Terminal Coding Editor Style Input -->
+              <div class="terminal-input-container">
+                <div class="terminal-header">
+                  <div class="terminal-dots">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-green"></span>
+                  </div>
+                  <div class="terminal-title">BLIND RECALL CONSOLE // STRICT WORD-DIFF</div>
+                  <div class="shortcuts-hint">按 Enter 提交比對</div>
+                </div>
+
+                <textarea 
+                  class="typing-textarea" 
+                  id="typing-area" 
+                  placeholder="只看題目中文，在此盲打完整英文句子（不假思索、一字不差）..."
+                  autocomplete="off" 
+                  autocorrect="off" 
+                  autocapitalize="off" 
+                  spellcheck="false"
+                ></textarea>
+
+                <div class="terminal-actions-bar">
+                  <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button class="btn-peek-hint" id="btn-peek-hint" title="按 Tab 或點擊偷看提示">
+                      👀 首字母提示 (Tab)
+                    </button>
+                    <span class="shortcuts-hint">Ctrl+Space 聽提示</span>
+                  </div>
+
+                  <button class="btn-submit-recall" id="btn-submit-recall">
+                    <span>⚡</span> 提交驗證 (Enter)
+                  </button>
+                </div>
+              </div>
+
+              <!-- High Precision Diff Result Panel -->
+              <div class="diff-result-panel" id="diff-result-panel">
+                <div class="diff-header">
+                  <div class="diff-status-badge perfect" id="diff-badge">
+                    ✓ 100% 精準通關 (Mastered)
+                  </div>
+                  <button class="btn-pill" onclick="app.resetRecallState(); document.getElementById('typing-area').focus();" style="font-size: 0.78rem;">
+                    🔄 重新盲測
+                  </button>
+                </div>
+
+                <div class="diff-tokens-wrapper" id="diff-tokens-wrapper"></div>
+
+                <div class="standard-solution-row">
+                  <div>🎯 標準母語骨架參考：</div>
+                  <div class="standard-solution-text" id="diff-standard-solution"></div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                  <button class="btn-pill" onclick="app.switchStep(4)" style="background: var(--accent-emerald); color: #fff; border: none;">
+                    通關！進入骨架替換沙盒 ▶
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ========================================== -->
+          <!-- STEP 4 CONTENT: 骨架替換沙盒 (Slot-Filling)-->
+          <!-- ========================================== -->
+          <div class="step-content-body" data-step="4" id="step-4-body">
+            <div class="slot-sandbox-grid">
+              
+              <!-- Pattern Extraction Box -->
+              <div class="slot-pattern-box">
+                <div class="block-title"><span>🏗️</span> 文法骨架公式萃取</div>
+                <div class="slot-formula" id="slot-formula-display">
+                  It would be [Adj] to [Action 1] and [Action 2].
+                </div>
+              </div>
+
+              <!-- Official Substitution Demo -->
+              <div class="demo-substitution-box">
+                <div class="block-title"><span>💼</span> 實戰情境抽換示範 (職場/日常實用)</div>
+                <div class="demo-en" id="demo-slot-en">
+                  It would be unwise to deploy the code and leave the office immediately.
+                </div>
+                <div class="demo-cn" id="demo-slot-cn">
+                  發布代碼後立刻離開辦公室是極不明智的。
+                </div>
+              </div>
+
+              <!-- User Custom Slot Writing -->
+              <div class="user-slot-custom-card">
+                <div class="block-title"><span>✍️</span> 打造你的個人造句筆記 (Slot-Filling Sandbox)</div>
+                <input 
+                  type="text" 
+                  class="user-slot-input" 
+                  id="user-slot-en-input" 
+                  placeholder="保留核心骨架，寫入你工作或生活的英文造句..."
+                >
+                <input 
+                  type="text" 
+                  class="user-slot-cn-input" 
+                  id="user-slot-cn-input" 
+                  placeholder="此句的中文意思..."
+                >
+                <button class="btn-save-slot" id="btn-save-slot">
+                  💾 儲存到個人筆記本
+                </button>
+              </div>
+
+              <!-- Action next sentence -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                <button class="btn-pill" onclick="app.switchStep(3)">
+                  ◀ 返回盲測重溫
+                </button>
+                <button class="btn-pill" onclick="if (app.currentId < 100) app.loadSentence(app.currentId + 1); app.switchStep(1);" style="background: var(--accent-dragon); color: #fff; border: none;">
+                  進入下一句 (No. Next) ▶
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Bottom Footer Navigation Bar -->
+          <div class="card-bottom-footer">
+            <button class="btn-pill" id="btn-bottom-prev">◀ 上一句</button>
+            <span class="shortcuts-hint">鍵盤快速鍵：Alt + 1~4 切換步驟 | Alt + ←/→ 切換題目</span>
+            <button class="btn-pill" id="btn-bottom-next">下一句 ▶</button>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- VIEW 2: 100-GRID MASTERY WALL (10x10 全綠通關牆) -->
+    <section class="view-section" data-view="grid" id="view-grid">
+      <div class="grid-view-container">
+        
+        <!-- Header & Stats Overview -->
+        <div class="grid-view-header">
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 0.6rem;">
+              <span>🟩</span> 100 句全綠通關牆
+            </h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.2rem;">
+              竹岡名言：「每熟記一句，大腦就多一條自動化反射神經。」目標是點亮整座 10x10 綠燈矩陣！
+            </p>
+          </div>
+
+          <div class="grid-stats-cards">
+            <div class="stat-card">
+              <div class="stat-number stat-val-mastered" style="color: var(--accent-emerald);">0</div>
+              <div class="stat-title">已點亮綠燈</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number stat-val-percent" style="color: #38bdf8;">0%</div>
+              <div class="stat-title">全句通關率</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number stat-val-learning" style="color: #fbbf24;">0</div>
+              <div class="stat-title">研練中</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number stat-val-mistakes" style="color: #ef4444;">0</div>
+              <div class="stat-title">錯題待強化</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Tags -->
+        <div class="grid-filter-bar">
+          <button class="btn-filter-tag active" data-filter="all">全部 (100)</button>
+          <button class="btn-filter-tag" data-filter="mastered">已通關綠燈</button>
+          <button class="btn-filter-tag" data-filter="incomplete">未通關</button>
+          <button class="btn-filter-tag" data-filter="mistakes">錯題強化庫</button>
+          <button class="btn-filter-tag" data-filter="bookmarked">我的收藏</button>
+        </div>
+
+        <!-- The 10x10 Large Grid Wall -->
+        <div class="large-100-grid" id="large-100-grid"></div>
+
+      </div>
+    </section>
+
+    <!-- VIEW 3: DAILY SPRINT (每日衝刺 5 句) -->
+    <section class="view-section" data-view="sprint" id="view-sprint">
+      <div class="sprint-container">
+        
+        <div class="sprint-header-card">
+          <div>
+            <h2 style="font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+              <span>⚡</span> 每日 5 句極限衝刺 (Daily Sprint)
+            </h2>
+            <p style="color: var(--text-secondary); font-size: 0.88rem; margin-top: 0.2rem;">
+              依據艾賓浩斯間隔重複法：精選 3 句新句 + 2 句溫故複習句，10 分鐘形成記憶高壓閉環。
+            </p>
+          </div>
+          <div class="sprint-progress-dots" id="sprint-progress-dots"></div>
+        </div>
+
+        <div id="sprint-content-area" class="study-card-panel" style="padding: 2rem;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+            🎯 題目中文提示
+          </div>
+          <div style="font-size: 1.4rem; font-weight: 700; margin-bottom: 1.5rem; line-height: 1.5;" id="sprint-prompt-cn">
+            題目載入中...
+          </div>
+
+          <div class="terminal-input-container">
+            <div class="terminal-header">
+              <span class="terminal-title">SPRINT RECALL // INSTANT TYPING</span>
+              <span class="shortcuts-hint">按 Enter 送出</span>
+            </div>
+            <textarea 
+              class="typing-textarea" 
+              id="sprint-typing-area" 
+              placeholder="請直接盲打英文句子..."
+              style="min-height: 85px;"
+            ></textarea>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem;">
+              <button class="btn-pill" id="btn-skip-sprint" style="font-size: 0.8rem;">
+                跳過此題 ⏭
+              </button>
+              <button class="btn-submit-recall" id="btn-submit-sprint">
+                驗證並晉級 ▶
+              </button>
+            </div>
+          </div>
+
+          <div class="diff-result-panel" id="sprint-diff-panel" style="margin-top: 1.25rem;">
+            <div id="sprint-diff-feedback"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- VIEW 4: SURVIVAL CHALLENGE (百句極限生存戰) -->
+    <section class="view-section" data-view="survival" id="view-survival">
+      <div class="survival-container">
+        
+        <div class="survival-hud">
+          <div class="survival-lives" id="survival-hearts">❤️❤️❤️</div>
+          <div class="survival-score-board" id="survival-score">得分: 0</div>
+          <div style="font-size: 0.95rem; font-weight: 700; color: #38bdf8;" id="survival-streak">連勝: 0</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted);" id="survival-highscore">歷史最佳: 0</div>
+        </div>
+
+        <!-- Start Card -->
+        <div class="study-card-panel" id="survival-start-card" style="padding: 3rem 2rem; text-align: center;">
+          <h2 style="font-size: 1.7rem; font-weight: 800; color: #ef4444; margin-bottom: 1rem;">
+            🔥 百句極限生存挑戰 (Survival Mode)
+          </h2>
+          <p style="color: var(--text-secondary); max-width: 550px; margin: 0 auto 2rem; line-height: 1.7;">
+            高壓無提示盲測！從 100 句中隨機抽題，每題限時 20 秒。答錯一字或超時即扣 1 顆心，連勝將啟動得分加倍乘數，挑戰你的神經肌肉極限！
+          </p>
+          <button class="btn-submit-recall" id="btn-start-survival" style="font-size: 1.1rem; padding: 0.8rem 2.2rem; margin: 0 auto;">
+            ⚡ 立即開始挑戰
+          </button>
+        </div>
+
+        <!-- Gameplay Card -->
+        <div class="study-card-panel" id="survival-play-card" style="padding: 2rem; display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">SURVIVAL QUESTION</span>
+            <span style="font-family: var(--font-mono); font-weight: 800; font-size: 1.1rem; color: #ef4444;" id="survival-timer-val">20s</span>
+          </div>
+
+          <div style="font-size: 1.35rem; font-weight: 700; margin-bottom: 1.25rem;" id="survival-prompt-cn"></div>
+
+          <div class="terminal-input-container">
+            <textarea 
+              class="typing-textarea" 
+              id="survival-typing-area" 
+              placeholder="極速盲打英文..."
+              style="min-height: 80px;"
+            ></textarea>
+            <div style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
+              <button class="btn-submit-recall" id="btn-submit-survival">
+                提交驗證 (Enter)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Game Over Card -->
+        <div class="study-card-panel" id="survival-gameover-card" style="padding: 3rem 2rem; text-align: center; display: none;">
+          <h2 style="font-size: 1.6rem; font-weight: 800; color: #ef4444; margin-bottom: 0.5rem;">
+            💀 生存挑戰結束
+          </h2>
+          <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">生命值耗盡！但每一次挫折都是神經迴路重建的契機。</p>
+          
+          <div style="font-size: 2.2rem; font-family: var(--font-mono); font-weight: 800; color: #fbbf24; margin-bottom: 0.5rem;" id="survival-final-score">
+            0
+          </div>
+          <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">
+            本次得分 | 歷史最高紀錄: <span id="survival-final-high">0</span>
+          </div>
+
+          <button class="btn-submit-recall" id="btn-restart-survival" style="margin: 0 auto;">
+            🔄 再挑戰一次
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- VIEW 5: SENTENCE EXPLORER (全句庫速查) -->
+    <section class="view-section" data-view="explorer" id="view-explorer">
+      <div class="explorer-container">
+        
+        <div class="explorer-search-bar">
+          <span style="font-size: 1.2rem;">🔍</span>
+          <input 
+            type="text" 
+            class="explorer-input" 
+            id="explorer-search-input" 
+            placeholder="搜尋關鍵單字、中文語意、句型語法（例如：wish, 倒裝, 形式主詞, 吹風機）..."
+          >
+          <select class="select-rate" id="explorer-category-select" style="background: var(--bg-tertiary); padding: 4px 10px; border-radius: var(--radius-sm);">
+            <option value="all">全部分類 (All Categories)</option>
+            <option value="形式主詞與假設語氣">形式主詞與假設語氣</option>
+            <option value="時態與副詞子句">時態與副詞子句</option>
+            <option value="分詞構句與感官動詞">分詞構句與感官動詞</option>
+            <option value="不定詞與數量詞">不定詞與數量詞</option>
+            <option value="無生物主詞慣用句">無生物主詞慣用句</option>
+            <option value="對稱連接詞結構">對稱連接詞結構</option>
+            <option value="倍數比較句型">倍數比較句型</option>
+            <option value="心智動詞與 succeed in">心智動詞與重要句型</option>
+          </select>
+        </div>
+
+        <div class="sentences-table-wrapper" id="sentences-table-wrapper"></div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- GUIDE MODAL (竹岡廣信 100 句暗記暗誦法名師導讀) -->
+  <div class="modal-overlay" id="guide-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title"><span>📖</span> 竹岡廣信「100 句極限暗記暗誦法」完整導讀</div>
+        <button class="btn-icon" id="btn-close-guide">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="guide-quote-box">
+          「不要盲目死背成百上千個句型，而是精選 100 個極具代表性的核心句子，徹底理解並一字不差地熟記，以此打通英文寫作與口語表達的骨架。」<br>
+          <span style="font-size: 0.85rem; color: #ef4444; font-weight: 700;">—— 竹岡廣信（漫畫《東大特訓班 / 龍櫻》英語名師原型）</span>
+        </div>
+
+        <div>
+          <h3>一、為什麼是「只練 100 句」？</h3>
+          <p>
+            許多人學英文陷入「收集癖」：背了 3000 個片語、刷了無數考題，真正要寫 Email 或開口時，腦袋依然先跑出中文，再試圖把每個字逐字直譯，導致文法漏洞百出、語速極慢。
+          </p>
+          <p>
+            竹岡流的核心在於<strong>「認知頻寬的釋放」</strong>：
+          </p>
+          <ul>
+            <li><strong>打造認知骨架（Mental Schema）：</strong>精選的 100 個句子涵蓋了英語表達中 90% 以上的時態交替、條件虛擬、因果承接與無生物主詞結構。</li>
+            <li><strong>自動化輸出（Automated Output）：</strong>當這 100 個句子的句型結構被練到像本能一樣反射時，大腦便不需要在「主謂一致、時態變化、介系詞搭配」上消耗運算資源，只需替換核心名詞或動詞。</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>二、三大命題核心與特色</h3>
+          <ul>
+            <li><strong>時態精準度（Tense）：</strong>精確區分現在完成式、過去式、進行式與假設語氣的細微時態差異。</li>
+            <li><strong>上下文與語境邏輯（Context & Logic）：</strong>避免日式/中式英文的硬翻，強調因果與邏輯連結。</li>
+            <li><strong>道地自然表達：</strong>去除生硬或不自然的辭藻，只選用英語母語人士常用且精確的句構。</li>
+            <li><strong>「換句話說」思維（和文和訳）：</strong>遇到生硬或抽象的中文句子時，先將其降解為「小學生也能懂的具體主謂賓邏輯」，再進行英文輸出。</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>三、四步極限訓練流程</h3>
+          <ul>
+            <li><strong>第一步：概念解構（Deconstruct）——</strong>弄懂為什麼用這個時態、介系詞，以及母語人士在該語境下的思維方式。</li>
+            <li><strong>第二步：影子跟讀（Shadowing）——</strong>不看文字，耳朵聽音檔，嘴巴慢半拍同步跟讀，建立發音語律與肌肉定型。</li>
+            <li><strong>第三步：極限盲測（Blind Recall）——</strong>蓋住英文，只看中文語意，3 秒之內不假思索、一字不差地口頭輸出與打字默寫。</li>
+            <li><strong>第四步：骨架替換（Slot-Filling）——</strong>保留句子的文法骨架，將主詞、動詞與名詞抽換為自己生活或工作中的實際情境。</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>四、避坑指南：實踐時的三大禁忌</h3>
+          <ul>
+            <li><strong>禁忌一：只動眼，不動筆與嘴。</strong>光看解答覺得「我懂」，到了白紙默寫或口頭輸出時錯誤百出。真正的掌握以「無提示盲寫 100% 正確」為唯一標準。</li>
+            <li><strong>禁忌二：貪多嚼不爛。</strong>一天硬背 20 句，隔天全忘。建議每天精雕 3～5 句，利用間隔重複，把 100 句切成 1 個月的刻意練習週期。</li>
+            <li><strong>禁忌三：忽略和文和訳。</strong>避免字句怪異的 Chinglish，先降解思考再輸出。</li>
+          </ul>
+        </div>
+
+        <div style="text-align: right; margin-top: 1rem;">
+          <button class="btn-pill" id="btn-reset-data" style="color: #ef4444; font-size: 0.8rem;">
+            ⚠️ 重置所有學習進度與筆記
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- SHORTCUTS MODAL -->
+  <div class="modal-overlay" id="shortcuts-modal">
+    <div class="modal-box" style="max-width: 550px;">
+      <div class="modal-header">
+        <div class="modal-title"><span>⌨️</span> 鍵盤高效快捷鍵</div>
+        <button class="btn-icon" id="btn-close-shortcuts">✕</button>
+      </div>
+      <div class="modal-body" style="gap: 1rem;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+          <tr style="border-bottom: 1px solid var(--bg-card-border);">
+            <td style="padding: 0.6rem 0; font-family: var(--font-mono); color: #38bdf8;">Enter</td>
+            <td style="color: var(--text-secondary);">提交盲測 / 驗證默寫結果</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--bg-card-border);">
+            <td style="padding: 0.6rem 0; font-family: var(--font-mono); color: #38bdf8;">Ctrl + Space</td>
+            <td style="color: var(--text-secondary);">隨時朗讀當前句子原音 (1.0x)</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--bg-card-border);">
+            <td style="padding: 0.6rem 0; font-family: var(--font-mono); color: #38bdf8;">Ctrl + Alt + Space</td>
+            <td style="color: var(--text-secondary);">隨時以 0.5 倍慢速朗讀 (聽清細節)</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--bg-card-border);">
+            <td style="padding: 0.6rem 0; font-family: var(--font-mono); color: #38bdf8;">Tab</td>
+            <td style="color: var(--text-secondary);">盲測輸入區中獲取首字母提示 (Peek)</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--bg-card-border);">
+            <td style="padding: 0.6rem 0; font-family: var(--font-mono); color: #38bdf8;">Alt + 1 ~ 4</td>
+            <td style="color: var(--text-secondary);">快速切換：1.解構 / 2.跟讀 / 3.盲測 / 4.造句</td>
+          </tr>
+          <tr>
+            <td style="padding: 0.6rem 0; font-family: var(--font-mono); color: #38bdf8;">Alt + ← / →</td>
+            <td style="color: var(--text-secondary);">切換上一句 / 下一句</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer>
+    <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div>Dragon English 100 学習システム • 基於日本洛南高校 / 駿台名師・竹岡廣信經典教學法</div>
+      <div>數據來源：《Dragon English 100 基本英文句型對照表》完整 100 句精編</div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
